@@ -15,5 +15,3 @@ console.log(path.extname(__filename));
 // Diretório do projeto
 
 console.log(path.dirname(__dirname));
-
-// Diretório do 
