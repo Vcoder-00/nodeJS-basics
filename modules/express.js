@@ -2,7 +2,15 @@ const express = require('express');
 const UserModel = require('../src/models/user.model');
 const app = express();
 
-app.use(express.json())// express vai reconhecer que as requisições sempre serão feitas em JSON
+app.use(express.json())// middleware (não obrigatório, mas essencial): express vai reconhecer que as requisições sempre serão feitas em JSON
+
+app.use((req, res, next) => { //middleware (opcional): seta uma mensagem para cada requisição ao servidor
+    console.log(`Request type: ${req.method}`);
+    console.log(`Content type: ${req.headers["content-type"]}`);
+    console.log(`Request type: ${new Date()}`);
+
+    next();// sem o next a requisição o restante do código "travaria"
+})
 
 const port = 8080;
 
@@ -20,7 +28,6 @@ app.get("/users", async (req, res) => { // listar usuarios
     catch (error) {
         return res.status(500).send(error.message);
     }
-    res.status(200).json(users);
 })
 
 app.get("/users/:id", async (req, res) => {// Read um usuario com base no id
@@ -33,7 +40,6 @@ app.get("/users/:id", async (req, res) => {// Read um usuario com base no id
     catch (error) {
         return res.status(500).send(error.message);
     }
-    res.status(200).json(user);
 });
 
 app.post('/users', async (req, res) => { //create do novo usuario
@@ -46,24 +52,24 @@ app.post('/users', async (req, res) => { //create do novo usuario
         if (error.name === 'ValidationError') {
             return res.status(400).json({ error: error.message }); //erro de validação
         }
-        res.status(500).send(error.message);// outros erros
+        return res.status(500).send(error.message);// outros erros
     }
 });
 
 app.patch('/users/:id', async (req, res) => { // Update de uma variavel do usuario
     try {
         const id = req.params.id;
-        const user = await UserModel.findByIdAndUpdate(id, req.body, {new: true});
+        const user = await UserModel.findByIdAndUpdate(id, req.body, { new: true });
 
         res.status(200).json(user);
     } catch (error) {
-        res.status(500).send(error.message);
+        return res.status(500).send(error.message);
     }
 })
 
 app.delete('/users/:id', async (req, res) => { //delete do novo usuario
     try {
-        const user = await UserModel.findByIdAndDelete(req.params.id); 
+        const user = await UserModel.findByIdAndDelete(req.params.id);
 
         res.status(200).json(user);
     }
@@ -71,7 +77,7 @@ app.delete('/users/:id', async (req, res) => { //delete do novo usuario
         if (error.name === 'ValidationError') {
             return res.status(400).json({ error: error.message }); //erro de validação
         }
-        res.status(500).send(error.message);// outros erros
+        return res.status(500).send(error.message);// outros erros
     }
 });
 
